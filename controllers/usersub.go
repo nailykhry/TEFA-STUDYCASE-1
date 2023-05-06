@@ -1,54 +1,54 @@
 package controllers
 
 import (
-	"TEFA-STUDYCASE-1/models"
-	"TEFA-STUDYCASE-1/repository"
-	"TEFA-STUDYCASE-1/util"
-	"errors"
-	"net/http"
-	"time"
+	"TEFA-STUDYCASE-1/models"     // O(1)
+	"TEFA-STUDYCASE-1/repository" // O(1)
+	"TEFA-STUDYCASE-1/util"       // O(1)
+	"errors"                      // O(1)
+	"net/http"                    // O(1)
+	"time"                        // O(1)
 
-	"github.com/gofiber/fiber/v2"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/gofiber/fiber/v2" // O(1)
+	"gopkg.in/mgo.v2/bson"        // O(1)
 )
 
 type UsersubsController interface {
-	CreateUsersub(ctx *fiber.Ctx) error
+	CreateUsersub(ctx *fiber.Ctx) error // O(1)
 }
 
 func NewUsersubController(usersubsRepo repository.UsersubsRepository) UsersubsController {
-	return &usersubsController{usersubsRepo}
+	return &usersubsController{usersubsRepo} // O(1)
 }
 
 type usersubsController struct {
-	usersubRepo repository.UsersubsRepository
+	usersubRepo repository.UsersubsRepository // O(1)
 }
 
 func (c *usersubsController) CreateUsersub(ctx *fiber.Ctx) error {
-	var newUsersub models.Usersub
-	err := ctx.BodyParser(&newUsersub)
-	if err != nil {
-		return ctx.
-			Status(http.StatusUnprocessableEntity).
-			JSON(util.NewJError(err))
+	var newUsersub models.Usersub      // O(1)
+	err := ctx.BodyParser(&newUsersub) // O(1)
+	if err != nil {                    // O(1)
+		return ctx. // O(1)
+				Status(http.StatusUnprocessableEntity).
+				JSON(util.NewJError(err))
 	}
 
-	if newUsersub.Plan == "" || newUsersub.Price == 0 {
-		return ctx.
-			Status(http.StatusBadRequest).
-			JSON(util.NewJError(errors.New("bad request: invalid task")))
+	if newUsersub.Plan == "" || newUsersub.Price == 0 { // O(1)
+		return ctx. // O(1)
+				Status(http.StatusBadRequest).
+				JSON(util.NewJError(errors.New("bad request: invalid usersub")))
 	}
 
-	newUsersub.CreatedAt = time.Now()
-	newUsersub.Id = bson.NewObjectId()
+	newUsersub.CreatedAt = time.Now()  // O(1)
+	newUsersub.Id = bson.NewObjectId() // O(1)
 
-	err = c.usersubRepo.CreateUsersub(&newUsersub)
-	if err != nil {
-		return ctx.
-			Status(http.StatusBadRequest).
-			JSON(util.NewJError(err))
+	err = c.usersubRepo.CreateUsersub(&newUsersub) // O(1)
+	if err != nil {                                // O(1)
+		return ctx. // O(1)
+				Status(http.StatusBadRequest).
+				JSON(util.NewJError(err))
 	}
-	return ctx.
-		Status(http.StatusCreated).
-		JSON(newUsersub)
+	return ctx. // O(1)
+			Status(http.StatusCreated).
+			JSON(newUsersub)
 }
