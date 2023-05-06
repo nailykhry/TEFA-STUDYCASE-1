@@ -14,9 +14,10 @@ var (
 	JwtSigningMethod = jwt.SigningMethodHS256.Name
 )
 
-func NewToken(userId string) (string, error) {
+func NewToken(userId string, userRole string) (string, error) {
 	claims := jwt.StandardClaims{
 		Id:        userId,
+		Subject:   userRole,
 		Issuer:    userId,
 		IssuedAt:  time.Now().Unix(),
 		ExpiresAt: time.Now().Add(time.Minute * 30).Unix(),

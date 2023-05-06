@@ -1,36 +1,44 @@
 package controllers
 
 import (
-	"TEFA-STUDYCASE-1/models"
-	"TEFA-STUDYCASE-1/repository"
-	"TEFA-STUDYCASE-1/util"
-	"errors"
-	"net/http"
-	"time"
+	"TEFA-STUDYCASE-1/models"     //O(1)
+	"TEFA-STUDYCASE-1/repository" //O(1)
+	"TEFA-STUDYCASE-1/security"
+	"TEFA-STUDYCASE-1/util" //O(1)
+	"errors"                //O(1)
+	"net/http"              //O(1)
+	"time"                  //O(1)
 
-	"github.com/gofiber/fiber/v2"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/form3tech-oss/jwt-go"
+	"github.com/gofiber/fiber/v2" //O(1)
+	"gopkg.in/mgo.v2/bson"        //O(1)
 )
 
 type ContentsController interface {
-	UploadContent(ctx *fiber.Ctx) error
-	GetContent(ctx *fiber.Ctx) error
-	GetContents(ctx *fiber.Ctx) error
-	PutContent(ctx *fiber.Ctx) error
-	DeleteContent(ctx *fiber.Ctx) error
+	UploadContent(ctx *fiber.Ctx) error //O(1)
+	GetContent(ctx *fiber.Ctx) error    //O(1)
+	GetContents(ctx *fiber.Ctx) error   //O(1)
+	PutContent(ctx *fiber.Ctx) error    //O(1)
+	DeleteContent(ctx *fiber.Ctx) error //O(1)
 }
 
 func NewContentController(contentsRepo repository.ContentsRepository) ContentsController {
-	return &contentsController{contentsRepo}
+	return &contentsController{contentsRepo} //O(1)
 }
 
 type contentsController struct {
-	contentRepo repository.ContentsRepository
+	contentRepo repository.ContentsRepository //O(1)
 }
 
 func (c *contentsController) UploadContent(ctx *fiber.Ctx) error {
+	payload, err := PayloadID(ctx)
+	if err != nil {
+		return ctx.
+			Status(http.StatusUnauthorized).
+			JSON(util.NewJError(err))
+	}
 	var newContent models.Content
-	err := ctx.BodyParser(&newContent)
+	err = ctx.BodyParser(&newContent)
 	if err != nil {
 		return ctx.
 			Status(http.StatusUnprocessableEntity).
@@ -45,7 +53,7 @@ func (c *contentsController) UploadContent(ctx *fiber.Ctx) error {
 
 	newContent.CreatedAt = time.Now()
 	newContent.UpdatedAt = newContent.CreatedAt
-	newContent.User_ID = "123456"
+	newContent.User_ID = payload.Id
 	newContent.Id = bson.NewObjectId()
 	err = c.contentRepo.UploadContent(&newContent)
 	if err != nil {
@@ -59,28 +67,28 @@ func (c *contentsController) UploadContent(ctx *fiber.Ctx) error {
 }
 
 func (c *contentsController) GetContent(ctx *fiber.Ctx) error {
-	// payload, err := AuthRequestWithId(ctx)
-	// if err != nil {
-	// 	return ctx.
-	// 		Status(http.StatusUnauthorized).
-	// 		JSON(util.NewJError(err))
-	// }
-
 	contentID := ctx.Params("id")
 	if !bson.IsObjectIdHex(contentID) {
 		return ctx.Status(http.StatusBadRequest).
 			JSON(util.NewJError(errors.New("invalid content id")))
 	}
 
-	user, err := c.contentRepo.GetById(contentID)
+	content, err := c.contentRepo.GetById(contentID)
 	if err != nil {
 		return ctx.
 			Status(http.StatusInternalServerError).
 			JSON(util.NewJError(err))
 	}
+	//cek authorize
+	err = ContentRequestWithId(ctx, content.User_ID)
+	if err != nil {
+		return ctx.
+			Status(http.StatusUnauthorized).
+			JSON(util.NewJError(err))
+	}
 	return ctx.
 		Status(http.StatusOK).
-		JSON(user)
+		JSON(content)
 }
 
 func (c *contentsController) GetContents(ctx *fiber.Ctx) error {
@@ -96,12 +104,6 @@ func (c *contentsController) GetContents(ctx *fiber.Ctx) error {
 }
 
 func (c *contentsController) PutContent(ctx *fiber.Ctx) error {
-	// payload, err := AuthRequestWithId(ctx)
-	// if err != nil {
-	// 	return ctx.
-	// 		Status(http.StatusUnauthorized).
-	// 		JSON(util.NewJError(err))
-	// }
 	contentID := ctx.Params("id")
 	if !bson.IsObjectIdHex(contentID) {
 		return ctx.Status(http.StatusBadRequest).
@@ -115,8 +117,15 @@ func (c *contentsController) PutContent(ctx *fiber.Ctx) error {
 			JSON(util.NewJError(err))
 	}
 
+	//cek authorize
+	err = ContentRequestWithId(ctx, update.User_ID)
+	if err != nil {
+		return ctx.
+			Status(http.StatusUnauthorized).
+			JSON(util.NewJError(err))
+	}
+
 	update.UpdatedAt = time.Now()
-	update.User_ID = "123456"
 	update.Id = bson.ObjectIdHex(contentID)
 	err = c.contentRepo.Update(&update)
 	print(update.Title)
@@ -132,12 +141,6 @@ func (c *contentsController) PutContent(ctx *fiber.Ctx) error {
 }
 
 func (c *contentsController) DeleteContent(ctx *fiber.Ctx) error {
-	// payload, err := AuthRequestWithId(ctx)
-	// if err != nil {
-	// 	return ctx.
-	// 		Status(http.StatusUnauthorized).
-	// 		JSON(util.NewJError(err))
-	// }
 	contentID := ctx.Params("id")
 	if !bson.IsObjectIdHex(contentID) {
 		return ctx.Status(http.StatusBadRequest).
@@ -152,4 +155,18 @@ func (c *contentsController) DeleteContent(ctx *fiber.Ctx) error {
 	}
 	ctx.Set("Entity", contentID)
 	return ctx.SendStatus(http.StatusOK)
+}
+
+// AUTHORIZATION
+func ContentRequestWithId(ctx *fiber.Ctx, id string) error {
+	token := ctx.Locals("user").(*jwt.Token)
+	payload, err := security.ParseToken(token.Raw)
+	if err != nil {
+		return err
+	}
+
+	if payload.Id != id || payload.Issuer != id {
+		return util.ErrUnauthorized
+	}
+	return nil
 }

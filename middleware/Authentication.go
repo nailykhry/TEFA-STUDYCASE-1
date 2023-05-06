@@ -9,10 +9,6 @@ import (
 	jwtware "github.com/gofiber/jwt/v2"
 )
 
-type Routes interface {
-	Install(app *fiber.App)
-}
-
 func AuthRequired(ctx *fiber.Ctx) error {
 	return jwtware.New(jwtware.Config{
 		SigningKey:    security.JwtSecretKey,

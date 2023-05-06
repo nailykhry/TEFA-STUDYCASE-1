@@ -2,6 +2,7 @@ package routes
 
 import (
 	"TEFA-STUDYCASE-1/controllers"
+	"TEFA-STUDYCASE-1/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,9 +20,9 @@ func NewTaskRoutes(tasksController controllers.TasksController) TaskRoutes {
 }
 
 func (r *taskRoutes) Task(app *fiber.App) {
-	app.Post("/tasks", r.tasksController.CreateTask)
-	app.Get("/tasks", r.tasksController.GetTasks)
-	app.Get("/tasks/:id", r.tasksController.GetTask)
-	app.Put("/tasks/:id", r.tasksController.UpdateTask)
-	app.Delete("/tasks/:id", r.tasksController.DeleteTask)
+	app.Post("/tasks", middleware.AuthRequired, r.tasksController.CreateTask)
+	app.Get("/tasks", middleware.AuthRequired, r.tasksController.GetTasks)
+	app.Get("/tasks/:id", middleware.AuthRequired, r.tasksController.GetTask)
+	app.Put("/tasks/:id", middleware.AuthRequired, r.tasksController.UpdateTask)
+	app.Delete("/tasks/:id", middleware.AuthRequired, r.tasksController.DeleteTask)
 }

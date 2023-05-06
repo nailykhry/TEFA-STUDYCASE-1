@@ -109,7 +109,7 @@ func (c *authController) SignIn(ctx *fiber.Ctx) error {
 			Status(http.StatusUnauthorized).
 			JSON(util.NewJError(util.ErrInvalidCredentials))
 	}
-	token, err := security.NewToken(user.Id.Hex())
+	token, err := security.NewToken(user.Id.Hex(), user.Role)
 	if err != nil {
 		log.Printf("%s signin failed: %v\n", input.Email, err.Error())
 		return ctx.
@@ -168,40 +168,20 @@ func (c *authController) PutUser(ctx *fiber.Ctx) error {
 			Status(http.StatusUnprocessableEntity).
 			JSON(util.NewJError(err))
 	}
-	update.Email = util.NormalizeEmail(update.Email)
-	if !govalidator.IsEmail(update.Email) {
+
+	update.UpdatedAt = time.Now()
+	update.Id = bson.ObjectIdHex(payload.Id)
+	err = c.usersRepo.Update(&update)
+
+	if err != nil {
 		return ctx.
 			Status(http.StatusBadRequest).
-			JSON(util.NewJError(util.ErrInvalidEmail))
-	}
-	exists, err := c.usersRepo.GetByEmail(update.Email)
-	if err == mgo.ErrNotFound || exists.Id.Hex() == payload.Id {
-		user, err := c.usersRepo.GetById(payload.Id)
-		if err != nil {
-			return ctx.
-				Status(http.StatusBadRequest).
-				JSON(util.NewJError(err))
-		}
-		user.Email = update.Email
-		user.UpdatedAt = time.Now()
-		err = c.usersRepo.Update(user)
-		if err != nil {
-			return ctx.
-				Status(http.StatusUnprocessableEntity).
-				JSON(util.NewJError(err))
-		}
-		return ctx.
-			Status(http.StatusOK).
-			JSON(user)
-	}
-
-	if exists != nil {
-		err = util.ErrEmailAlreadyExists
+			JSON(util.NewJError(err))
 	}
 
 	return ctx.
-		Status(http.StatusBadRequest).
-		JSON(util.NewJError(err))
+		Status(http.StatusCreated).
+		JSON(update)
 }
 
 func (c *authController) DeleteUser(ctx *fiber.Ctx) error {
@@ -233,6 +213,15 @@ func AuthRequestWithId(ctx *fiber.Ctx) (*jwt.StandardClaims, error) {
 	}
 	if payload.Id != id || payload.Issuer != id {
 		return nil, util.ErrUnauthorized
+	}
+	return payload, nil
+}
+
+func PayloadID(ctx *fiber.Ctx) (*jwt.StandardClaims, error) {
+	token := ctx.Locals("user").(*jwt.Token)
+	payload, err := security.ParseToken(token.Raw)
+	if err != nil {
+		return nil, err
 	}
 	return payload, nil
 }

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"TEFA-STUDYCASE-1/controllers"
+	"TEFA-STUDYCASE-1/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,5 +20,5 @@ func NewUsersubRoutes(usersubsController controllers.UsersubsController) Usersub
 }
 
 func (r *usersubRoutes) Usersub(app *fiber.App) {
-	app.Post("/usersubs", r.usersubsController.CreateUsersub)
+	app.Post("/usersubs", middleware.AuthRequired, r.usersubsController.CreateUsersub)
 }

@@ -7,11 +7,15 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+type Routes interface {
+	Install(app *fiber.App)
+}
+
 type authRoutes struct {
 	authController controllers.AuthController
 }
 
-func NewAuthRoutes(authController controllers.AuthController) middleware.Routes {
+func NewAuthRoutes(authController controllers.AuthController) Routes {
 	return &authRoutes{authController}
 }
 
