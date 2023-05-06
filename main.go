@@ -53,5 +53,10 @@ func main() {
 	usersubRoutes := routes.NewUsersubRoutes(usersubController)
 	usersubRoutes.Usersub(app)
 
+	userchatRepo := repository.NewTUserchatRepository(conn)
+	userchatController := controllers.NewUserchatController(userchatRepo)
+	userchatRoutes := routes.NewUserchatRoutes(userchatController)
+	userchatRoutes.Userchat(app)
+
 	log.Fatal(app.Listen(":8080"))
 }

@@ -1,131 +1,130 @@
 package controllers
 
 import (
-	"TEFA-STUDYCASE-1/models"
-	"TEFA-STUDYCASE-1/repository"
-	"TEFA-STUDYCASE-1/util"
-	"errors"
-	"net/http"
-	"time"
+	"TEFA-STUDYCASE-1/models"     // O(1)
+	"TEFA-STUDYCASE-1/repository" // O(1)
+	"TEFA-STUDYCASE-1/util"       // O(1)
+	"errors"                      // O(1)
+	"net/http"                    // O(1)
+	"time"                        // O(1)
 
-	"github.com/gofiber/fiber/v2"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/gofiber/fiber/v2" // O(1)
+	"gopkg.in/mgo.v2/bson"        // O(1)
 )
 
 type TasksController interface {
-	CreateTask(ctx *fiber.Ctx) error
-	GetTask(ctx *fiber.Ctx) error
-	// GetTasks(ctx *fiber.Ctx) error
-	UpdateTask(ctx *fiber.Ctx) error
-	DeleteTask(ctx *fiber.Ctx) error
+	CreateTask(ctx *fiber.Ctx) error // O(1)
+	GetTask(ctx *fiber.Ctx) error    // O(1)
+	GetTasks(ctx *fiber.Ctx) error   // O(1)
+	UpdateTask(ctx *fiber.Ctx) error // O(1)
+	DeleteTask(ctx *fiber.Ctx) error // O(1)
 }
 
 func NewTaskController(tasksRepo repository.TasksRepository) TasksController {
-	return &tasksController{tasksRepo}
+	return &tasksController{tasksRepo} // O(1)
 }
 
 type tasksController struct {
-	taskRepo repository.TasksRepository
+	taskRepo repository.TasksRepository // O(1)
 }
 
 func (c *tasksController) CreateTask(ctx *fiber.Ctx) error {
-	var newTask models.Task
-	err := ctx.BodyParser(&newTask)
-	if err != nil {
-		return ctx.
-			Status(http.StatusUnprocessableEntity).
-			JSON(util.NewJError(err))
+	var newTask models.Task         // O(1)
+	err := ctx.BodyParser(&newTask) // O(1)
+	if err != nil {                 // O(1)
+		return ctx. // O(1)
+				Status(http.StatusUnprocessableEntity).
+				JSON(util.NewJError(err))
 	}
 
-	if newTask.Title == "" || newTask.Description == "" {
-		return ctx.
-			Status(http.StatusBadRequest).
-			JSON(util.NewJError(errors.New("bad request: invalid task")))
+	if newTask.Title == "" || newTask.Description == "" { // O(1)
+		return ctx. // O(1)
+				Status(http.StatusBadRequest).
+				JSON(util.NewJError(errors.New("bad request: invalid task")))
 	}
 
-	newTask.CreatedAt = time.Now()
-	newTask.UpdatedAt = newTask.CreatedAt
-	newTask.Id = bson.NewObjectId()
-	newTask.ContentId = "ldsjvhnrihb974923"
+	newTask.CreatedAt = time.Now()        // O(1)
+	newTask.UpdatedAt = newTask.CreatedAt // O(1)
+	newTask.Id = bson.NewObjectId()       // O(1)
 
-	err = c.taskRepo.CreateTask(&newTask)
-	if err != nil {
-		return ctx.
-			Status(http.StatusBadRequest).
-			JSON(util.NewJError(err))
+	err = c.taskRepo.CreateTask(&newTask) // O(1)
+	if err != nil {                       // O(1)
+		return ctx. // O(1)
+				Status(http.StatusBadRequest).
+				JSON(util.NewJError(err))
 	}
-	return ctx.
-		Status(http.StatusCreated).
-		JSON(newTask)
+	return ctx. // O(1)
+			Status(http.StatusCreated).
+			JSON(newTask)
 }
 
 func (c *tasksController) GetTask(ctx *fiber.Ctx) error {
-	taskID := ctx.Params("id")
-	if !bson.IsObjectIdHex(taskID) {
+	taskID := ctx.Params("id")       // O(1)
+	if !bson.IsObjectIdHex(taskID) { // O(1)
 		return ctx.Status(http.StatusBadRequest).
-			JSON(util.NewJError(errors.New("invalid content id")))
+			JSON(util.NewJError(errors.New("invalid task id")))
 	}
-	user, err := c.taskRepo.GetTaskById(taskID)
-	if err != nil {
-		return ctx.
-			Status(http.StatusInternalServerError).
-			JSON(util.NewJError(err))
+	user, err := c.taskRepo.GetTaskById(taskID) // O(1)
+	if err != nil {                             // O(1)
+		return ctx. // O(1)
+				Status(http.StatusInternalServerError).
+				JSON(util.NewJError(err))
 	}
-	return ctx.
-		Status(http.StatusOK).
-		JSON(user)
+	return ctx. // O(1)
+			Status(http.StatusOK).
+			JSON(user)
 }
 
-// func (c *tasksController) GetTasks(ctx *fiber.Ctx) error {
-// 	tasks, err := c.taskRepo.GetAllTasks()
-// 	if err != nil {
-// 		return ctx.
-// 			Status(http.StatusInternalServerError).
-// 			JSON(util.NewJError(err))
-// 	}
-// 	return ctx.
-// 		Status(http.StatusOK).
-// 		JSON(tasks)
-// }
+func (c *tasksController) GetTasks(ctx *fiber.Ctx) error {
+	tasks, err := c.taskRepo.GetAllTasks() // O(n)
+	if err != nil {                        // O(1)
+		return ctx. // O(1)
+				Status(http.StatusInternalServerError).
+				JSON(util.NewJError(err))
+	}
+	return ctx. // O(1)
+			Status(http.StatusOK).
+			JSON(tasks)
+}
 
 func (c *tasksController) UpdateTask(ctx *fiber.Ctx) error {
-	taskID := ctx.Params("id")
-	var update models.Task
-	err := ctx.BodyParser(&update)
-	if err != nil {
+	taskID := ctx.Params("id")     // O(1)
+	var update models.Task         // O(1)
+	err := ctx.BodyParser(&update) // O(1)
+	if err != nil {                // O(1)
 		return ctx.
 			Status(http.StatusUnprocessableEntity).
 			JSON(util.NewJError(err))
 	}
 
-	update.UpdatedAt = time.Now()
-	update.Id = bson.ObjectIdHex(taskID)
+	update.UpdatedAt = time.Now()        // O(1)
+	update.Id = bson.ObjectIdHex(taskID) // O(1)
 
-	err = c.taskRepo.UpdateTask(&update)
-	if err != nil {
-		return ctx.
-			Status(http.StatusBadRequest).
-			JSON(util.NewJError(err))
+	err = c.taskRepo.UpdateTask(&update) // O(1)
+	if err != nil {                      // O(1)
+		return ctx. // O(1)
+				Status(http.StatusBadRequest).
+				JSON(util.NewJError(err))
 	}
 
-	return ctx.
-		Status(http.StatusOK).
-		JSON(update)
+	return ctx. // O(1)
+			Status(http.StatusOK).
+			JSON(update)
 }
 
 func (c *tasksController) DeleteTask(ctx *fiber.Ctx) error {
-	taskID := ctx.Params("id")
-	if !bson.IsObjectIdHex(taskID) {
-		return ctx.Status(http.StatusBadRequest).
-			JSON(util.NewJError(errors.New("invalid content id")))
+	taskID := ctx.Params("id")       // O(1)
+	if !bson.IsObjectIdHex(taskID) { // O(1)
+		return ctx.Status(http.StatusBadRequest). // O(1)
+								JSON(util.NewJError(errors.New("invalid task id")))
 	}
 
-	err := c.taskRepo.DeleteTask(taskID)
-	if err != nil {
-		return ctx.
-			Status(http.StatusInternalServerError).
-			JSON(util.NewJError(err))
+	err := c.taskRepo.DeleteTask(taskID) // O(1)
+	if err != nil {                      // O(1)
+		return ctx. // O(1)
+				Status(http.StatusInternalServerError).
+				JSON(util.NewJError(err))
 	}
-	ctx.Set("Entity", taskID)
-	return ctx.SendStatus(http.StatusOK)
+	ctx.Set("Entity", taskID)            // O(1)
+	return ctx.SendStatus(http.StatusOK) // O(1)
 }

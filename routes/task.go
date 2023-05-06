@@ -20,6 +20,7 @@ func NewTaskRoutes(tasksController controllers.TasksController) TaskRoutes {
 
 func (r *taskRoutes) Task(app *fiber.App) {
 	app.Post("/tasks", r.tasksController.CreateTask)
+	app.Get("/tasks", r.tasksController.GetTasks)
 	app.Get("/tasks/:id", r.tasksController.GetTask)
 	app.Put("/tasks/:id", r.tasksController.UpdateTask)
 	app.Delete("/tasks/:id", r.tasksController.DeleteTask)
