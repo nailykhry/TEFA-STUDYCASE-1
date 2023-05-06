@@ -22,6 +22,7 @@ func NewConnection() Connection {
 	var c conn
 	var err error
 	url := getURL()
+	fmt.Println(url)
 	c.session, err = mgo.Dial(url)
 	if err != nil {
 		log.Panicln(err.Error())
