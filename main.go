@@ -43,5 +43,15 @@ func main() {
 	contentRoutes := routes.NewContentRoutes(contentsController)
 	contentRoutes.Content(app)
 
+	tasksRepo := repository.NewTaskRepository(conn)
+	tasksController := controllers.NewTaskController(tasksRepo)
+	tasksRoutes := routes.NewTaskRoutes(tasksController)
+	tasksRoutes.Task(app)
+
+	usersubRepo := repository.NewUsersubRepository(conn)
+	usersubController := controllers.NewUsersubController(usersubRepo)
+	usersubRoutes := routes.NewUsersubRoutes(usersubController)
+	usersubRoutes.Usersub(app)
+
 	log.Fatal(app.Listen(":8080"))
 }
