@@ -49,7 +49,7 @@ func (c *authController) SignUp(ctx *fiber.Ctx) error {
 				Status(http.StatusBadRequest).
 				JSON(util.NewJError(util.ErrInvalidEmail))
 	}
-	exists, err := c.usersRepo.GetByEmail(newUser.Email) //O(n)
+	exists, err := c.usersRepo.GetByEmail(newUser.Email) //O(1)
 	if err == mgo.ErrNotFound {                          //O(1)
 		if strings.TrimSpace(newUser.Password) == "" { //O(1)
 			return ctx. //O(1)
