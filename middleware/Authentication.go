@@ -1,16 +1,16 @@
 package middleware
 
 import (
-	"TEFA-STUDYCASE-1/security"
-	"TEFA-STUDYCASE-1/util"
-	"net/http"
+	"TEFA-STUDYCASE-1/security" //O(1)
+	"TEFA-STUDYCASE-1/util"     //O(1)
+	"net/http"                  //O(1)
 
-	"github.com/gofiber/fiber/v2"
-	jwtware "github.com/gofiber/jwt/v2"
+	"github.com/gofiber/fiber/v2"       //O(1)
+	jwtware "github.com/gofiber/jwt/v2" //O(1)
 )
 
 func AuthRequired(ctx *fiber.Ctx) error {
-	return jwtware.New(jwtware.Config{
+	return jwtware.New(jwtware.Config{ //O(1)
 		SigningKey:    security.JwtSecretKey,
 		SigningMethod: security.JwtSigningMethod,
 		TokenLookup:   "header:Authorization",

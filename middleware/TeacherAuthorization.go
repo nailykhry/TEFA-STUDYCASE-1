@@ -8,13 +8,13 @@ import (
 	"github.com/gofiber/fiber/v2"     //O(1)
 )
 
-func AdminMiddleware(ctx *fiber.Ctx) error {
+func TeacherMiddleware(ctx *fiber.Ctx) error {
 	token := ctx.Locals("user").(*jwt.Token)       //O(1)
 	payload, err := security.ParseToken(token.Raw) //O(n)
 	if err != nil {                                //O(1)
 		return err //O(1)
 	}
-	if payload.Subject != "admin" { //O(1)
+	if payload.Subject != "teacher" { //O(1)
 		return util.ErrUnauthorized //O(1)
 	}
 	return ctx.Next() //O(1)
