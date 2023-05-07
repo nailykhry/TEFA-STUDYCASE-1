@@ -64,9 +64,9 @@ This project is created to fulfill the TEFA task. The API project is implemented
  - Naily Khairiya
  - Helsa Nesta 
  
- ### DEMO 
+ ### E. DEMO 
  "Group 3 Present - Click the image to Watch!"
  [![Here is project demo](https://user-images.githubusercontent.com/72675854/236676988-652cc9eb-1415-46fd-b584-7d160338b25f.png)](https://youtu.be/C0zcHwSBTPs "Group 3 Present - Click to Watch!")
  
- ### DOCUMENTS
+ ### F. DOCUMENTS
  [You can access here](https://github.com/nailykhry/TEFA-STUDYCASE-1/blob/main/DocumentStudyCase1.pdf)
